@@ -1,5 +1,5 @@
-import init.universal3470.usb.rc
-import init.wifi.rc
+import /vendor/etc/init/hw/init.universal3470.usb.rc
+import /vendor/etc/init/hw/init.wifi.rc
 
 on early-init
 
@@ -314,7 +314,7 @@ on boot
     chmod 0664 /sys/power/enable_dm_hotplug
 
 on fs
-    mount_all /fstab.universal3470 --early
+    mount_all /vendor/etc/fstab.universal3470 --early
     setprop ro.crypto.fuse_sdcard true
 
 #For Absolute Persistence Partition
@@ -329,7 +329,7 @@ on fs
     chown system system /persdata/absolute
     chmod 0750 /persdata/absolute
 
-    mount_all /fstab.universal3470 --late
+    mount_all /vendor/etc/fstab.universal3470 --late
 
 # Support Preload install apks
     mkdir /preload 0771 system system
@@ -524,6 +524,12 @@ on fs
 on property:apexd.status=ready
     mount none /system/etc/swcodec/ld.config.txt /apex/com.android.media.swcodec/etc/ld.config.txt bind
 
+# SENSOR FRAMEWORK : starts fingerprintService
+service vcsFPService /system/bin/vcsFPService
+    class main
+    user system
+    group system
+
 service prepare_param /system/bin/prepare_param.sh /dev/block/platform/dw_mmc.0/by-name/PARAM
     class core
     user root
@@ -553,12 +559,15 @@ service mobicore /system/bin/mcDriverDaemon -r /system/app/FFFFFFFF0000000000000
 #    class core
 
 # GPS
+# Legacy gpsd blob links against Pie's SensorManager ABI:
+# getSensorList() was const in libgui, is non-const in libsensor on Q.
+# libgpsd_shim exports the const-mangled symbol via LD_PRELOAD.
 service gpsd /system/bin/gpsd -c /system/etc/gps.xml
     class main
     user gps
     group system inet net_raw
     ioprio be 0
-#    seclabel u:r:gpsd:s0
+    setenv LD_PRELOAD /vendor/lib/libgpsd_shim.so
 
 # on userdebug and eng builds, enable kgdb on the serial console
 on property:ro.debuggable=1

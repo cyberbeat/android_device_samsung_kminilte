@@ -52,6 +52,9 @@ lib/libExynosIPService.so
 #lib/libcsc.so
 
 # HWC
+# PATCHED: query() HWC_BACKGROUND_LAYER_SUPPORTED returns 0 (was hardcoded 1,
+# blob derefs backgroundColor as gralloc handle -> libdisplay.so crash).
+# Re-apply after blob re-extraction: vendor/samsung/kminilte/patches/patch_hwc_query.sh
 lib/hw/hwcomposer.exynos3.so
 lib/hw/gralloc.exynos3.so
 # Needed by hwcomposer.exynos3.so
@@ -200,9 +203,9 @@ lib/lib_Samsung_Resampler.so
 lib/lib_Samsung_SB_AM_for_ICS_v04004.so
 
 # Fingerprint
-#bin/vcsFPService
-#lib/libfpasmtztransport.so
-#lib/libvalAuth.so
-#lib/libvcsfp.so
-#lib/libvfmClient.so
-#lib/libvfmtztransport.so
+bin/vcsFPService
+lib/libfpasmtztransport.so
+lib/libvalAuth.so
+lib/libvcsfp.so
+lib/libvfmClient.so
+lib/libvfmtztransport.so

@@ -261,6 +261,11 @@
  <!-- Whether the always on display mode is available. -->
     <bool name="config_dozeAlwaysOnDisplayAvailable">true</bool>
 
+    <!-- AOSP defaults DOZE_ALWAYS_ON to ON via this config. The G800F has a
+         TFT-LCD panel: "always on" keeps the backlight powered and drains the
+         battery massively. Default it OFF (users can still enable it). -->
+    <bool name="config_dozeAlwaysOnEnabled">false</bool>
+
     <!-- Whether the display blanks itself when transition from a doze to a non-doze state -->
     <bool name="config_displayBlanksAfterDoze">true</bool>
 

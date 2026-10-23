@@ -43,6 +43,7 @@ ro.vendor.qti.sys.fw.bservice_enable=true
 
 #adb
 ro.adb.secure=0
+persist.adb.nonblocking_ffs=false
 ro.secure=0
 ro.debuggable=1
 sys.usb.config=adb
@@ -74,8 +75,10 @@ ro.ril.fast.dormancy.rule=1
 wifi.supplicant_scan_interval=180
 
 
-# Disable HW overlays
-debug.sf.disable_hwcomposer=true
+# HW overlays: enabled since hwcomposer.exynos3.so query() patch
+# (blob falsely claimed HWC_BACKGROUND support -> SF crash on SolidColor).
+# Set back to true as escape hatch if HWC misbehaves.
+debug.sf.disable_hwcomposer=false
 
 # Legacy graphics optimizations
 debug.hwui.use_buffer_age=false

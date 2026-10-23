@@ -34,7 +34,7 @@ on boot
     setprop wifi.interface wlan0
 
 # Run deferred initcalls of builtin kernel modules (bcmdhd)
-service wifiloader /system/bin/wifiloader
+service wifiloader /vendor/bin/wifiloader
     class main
 #    seclabel u:r:wifiloader:s0
     oneshot
@@ -65,3 +65,14 @@ service macloader /vendor/bin/macloader
 
 on property:wlan.driver.status=ok
     start macloader
+
+# After macloader stops, override the firmware/nvram paths with the correct
+# ones. macloader sets mfg firmware paths (which don't exist on this device)
+# when /data/.wifiver.info contains "0" (which init writes on every boot).
+# NOTE: the driver appends the chip revision suffix (_b2 for BCM4334-B2)
+# itself, so the path must NOT include it.
+# This ensures WiFi works on the first enable after reboot without needing
+# to toggle WiFi twice.
+on property:init.svc.macloader=stopped
+    write /sys/module/dhd/parameters/firmware_path /vendor/etc/wifi/bcmdhd_sta.bin
+    write /sys/module/dhd/parameters/nvram_path /system/etc/wifi/nvram_net.txt

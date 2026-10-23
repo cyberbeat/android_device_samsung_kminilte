@@ -17,6 +17,9 @@
 # Also get non-open-source specific aspects if available
 $(call inherit-product-if-exists, vendor/samsung/kminilte/kminilte-vendor.mk)
 
+# microG + F-Droid (prebuilt APKs under vendor/partner_gms)
+$(call inherit-product-if-exists, vendor/partner_gms/products/fi.mk)
+
 LOCAL_PATH := device/samsung/kminilte
 
 PRODUCT_SOONG_NAMESPACES += $(LOCAL_PATH)
@@ -36,25 +39,33 @@ TARGET_BOOTANIMATION_HALF_RES := true
 # Ramdisk
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/etc/fstab.universal3470:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.universal3470 \
+    $(LOCAL_PATH)/rootdir/etc/fstab.universal3470:$(TARGET_COPY_OUT_RAMDISK)/fstab.universal3470 \
     $(LOCAL_PATH)/rootdir/etc/init.universal3470.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.universal3470.rc \
     $(LOCAL_PATH)/rootdir/etc/init.universal3470.usb.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.universal3470.usb.rc \
     $(LOCAL_PATH)/rootdir/etc/init.wifi.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.wifi.rc \
     $(LOCAL_PATH)/rootdir/etc/ueventd.universal3470.rc:$(TARGET_COPY_OUT_VENDOR)/ueventd.rc \
-    $(LOCAL_PATH)/rootdir/etc/loggy.sh:$(TARGET_COPY_OUT_VENDOR)/init/hw/loggy.sh
+    $(LOCAL_PATH)/rootdir/etc/loggy.sh:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/loggy.sh
 
 # Audio
 USE_CUSTOM_AUDIO_POLICY := 1
 USE_XML_AUDIO_POLICY_CONF := 1
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/audio/audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml
+    $(LOCAL_PATH)/audio/audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml \
+    frameworks/av/services/audiopolicy/config/audio_policy_volumes.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_volumes.xml \
+    frameworks/av/services/audiopolicy/config/default_volume_tables.xml:$(TARGET_COPY_OUT_VENDOR)/etc/default_volume_tables.xml \
+    frameworks/av/services/audiopolicy/config/a2dp_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_audio_policy_configuration.xml \
+    frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml \
+    frameworks/av/services/audiopolicy/config/r_submix_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/r_submix_audio_policy_configuration.xml
 
 # APEX
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/ld.config.txt:$(TARGET_COPY_OUT_SYSTEM)/etc/swcodec/ld.config.txt
 
 # Camera
-#PRODUCT_PACKAGES += \
-#    libion_exynos
+# full_base_telephony.mk does not pull in handheld_product.mk, so Camera2
+# must be listed explicitly to ship a camera app in the image.
+PRODUCT_PACKAGES += \
+    Camera2
 
 # Keylayouts
 PRODUCT_COPY_FILES += \
@@ -66,9 +77,12 @@ PRODUCT_PACKAGES += \
     lights.exynos3
 
 # Power
+# power.exynos3 blob corrupts the heap (BatteryStatsWorker je_free crash).
+# Generic AOSP service wraps power.default.so (no-op stub) — registers IPower
+# so BatteryStatsService picks the clean "power HAL" path without rail stats.
 PRODUCT_PACKAGES += \
-    android.hardware.power@1.0-impl \
-    power.exynos3
+    android.hardware.power@1.0-service \
+    android.hardware.power@1.0-impl
 
 # IR
 PRODUCT_PACKAGES += \
@@ -76,10 +90,16 @@ PRODUCT_PACKAGES += \
     android.hardware.ir@1.0-impl \
     android.hardware.ir@1.0-service
 
+# Display
+# Proprietary hwcomposer blob, installed with the query() patch applied to a
+# build-time copy (rule in vendor/samsung/kminilte/Android.mk).
+PRODUCT_PACKAGES += \
+    hwcomposer.exynos3
+
 # Sensors
-#PRODUCT_PACKAGES += \
-#    android.hardware.sensors@1.0-impl \
-#    sensors.universal3470
+PRODUCT_PACKAGES += \
+    android.hardware.sensors@1.0-impl \
+    sensors.universal3470
 
 # Vibrator
 PRODUCT_PACKAGES += \
@@ -92,6 +112,7 @@ PRODUCT_PACKAGES += \
 # Fingerprint
 PRODUCT_PACKAGES += \
     fingerprint.universal3470 \
+    ValidityService \
     android.hardware.biometrics.fingerprint@2.1-service
 
 # Media config

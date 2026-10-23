@@ -74,7 +74,7 @@ LOCAL_SHARED_LIBRARIES += libdl
 LOCAL_SHARED_LIBRARIES += libmllite
 
 # Additions for SysPed
-#LOCAL_SHARED_LIBRARIES += libmplmpu
+LOCAL_SHARED_LIBRARIES += libmplmpu
 LOCAL_C_INCLUDES += $(INVENSENSE_IIO_PATH)/software/core/mpl
 LOCAL_CPPFLAGS += -DLINUX=1
 
@@ -127,16 +127,19 @@ $(info YD>>LOCAL_MODULE=$(LOCAL_MODULE), LOCAL_SRC_FILES=$(LOCAL_SRC_FILES), LOC
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
+# libmplmpu.so has 9 LOCAL-bound symbols misplaced in the global .dynsym
+# range which lld rejects. The checked-in blob stays original; the
+# dynsym-patched copy is generated at build time by the rule in
+# vendor/samsung/kminilte/Android.mk.
 LOCAL_MODULE := libmplmpu
-LOCAL_SRC_FILES := ../../../../$(PROPRIETARY_PATH)/lib/libmplmpu.so
+LOCAL_PREBUILT_MODULE_FILE := $(TARGET_OUT_INTERMEDIATES)/vendor/samsung/kminilte/patched/libmplmpu.so
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_OWNER := invensense
 LOCAL_MODULE_SUFFIX := .so
-LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_PATH := $(TARGET_OUT)/lib
 OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
 LOCAL_STRIP_MODULE := true
-include $(BUILD_PREBUILT)
+include $(BUILD_SHARED_LIBRARY)
 
 # libmllite contains firmware with SHealth and stepdector support
 include $(CLEAR_VARS)

@@ -21,18 +21,11 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := fingerprint.universal3470
 LOCAL_MODULE_RELATIVE_PATH := hw
-LOCAL_SRC_FILES := \
-    fingerprint.c \
-    fingerprint_tz.c \
-    QSEEComAPI.c \
-    hash.c
-
-LOCAL_C_INCLUDES += \
-    external/sqlite/dist
+LOCAL_SRC_FILES := fingerprint.c
 
 LOCAL_SHARED_LIBRARIES := \
         liblog \
-        libsqlite
+        libcutils
 
 LOCAL_MODULE_TAGS := optional
 LOCAL_PROPRIETARY_MODULE := true
